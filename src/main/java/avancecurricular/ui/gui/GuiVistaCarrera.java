@@ -6,11 +6,7 @@ import avancecurricular.ui.controller.ControladorCarrera;
 import avancecurricular.ui.view.VistaCarrera;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableRowSorter;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,139 +18,25 @@ import java.util.List;
  * Utiliza un {@link DefaultTableModel} sobreescrito para renderizar una tabla de sólo lectura,
  * delegando la reactividad (actualizaciones, registros, eliminaciones) mediante listeners hacia el controlador.
  */
-public class GuiVistaCarrera extends JPanel implements VistaCarrera {
+public class GuiVistaCarrera extends GuiVistaModulo implements VistaCarrera {
 
     private ControladorCarrera controlador;
     private JTextField txtId;
     private JTextField txtNombre;
     private JTextField txtCreditos;
-    private DefaultTableModel tableModel;
-    private JTable tablaCarreras;
-    private TableRowSorter<DefaultTableModel> rowSorter;
-    private JTextField txtBuscar;
 
     public GuiVistaCarrera() {
-        setLayout(new BorderLayout(20, 20));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        super("Registrar Carrera", 3, 4,
+              "Catálogo de Carreras", "ID", "Nombre", "Créditos Totales", "Cant. Asignaturas");
 
-        JPanel panelIzquierdo = new JPanel(new BorderLayout(0, 20));
-        panelIzquierdo.setPreferredSize(new Dimension(350, 0));
-        
-        JPanel panelFormulario = new JPanel(new BorderLayout(0, 15));
-        panelFormulario.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Registrar Carrera"),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
-        
-        JPanel panelCampos = new JPanel(new GridLayout(3, 2, 10, 15));
-        
-        panelCampos.add(new JLabel("ID:"));
-        txtId = new JTextField();
-        panelCampos.add(txtId);
-        
-        panelCampos.add(new JLabel("Nombre:"));
-        txtNombre = new JTextField();
-        panelCampos.add(txtNombre);
-        
-        panelCampos.add(new JLabel("Créditos:"));
-        txtCreditos = new JTextField();
-        panelCampos.add(txtCreditos);
+        txtId = agregarCampo("ID:");
+        txtNombre = agregarCampo("Nombre:");
+        txtCreditos = agregarCampo("Créditos:");
 
-        JButton btnAgregar = new JButton("<html><p style='text-align:center;'>Registrar</p></html>");
-        btnAgregar.setPreferredSize(new Dimension(0, 45));
-
-        panelFormulario.add(panelCampos, BorderLayout.CENTER);
-        panelFormulario.add(btnAgregar, BorderLayout.SOUTH);
-
-        JPanel panelBotones = new JPanel(new GridLayout(4, 1, 0, 10));
-        panelBotones.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Acciones"),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
-        
-        JButton btnVerMalla = new JButton("<html><p style='text-align:center;'>Ver Malla Curricular</p></html>");
-        JButton btnAddAsignatura = new JButton("<html><p style='text-align:center;'>Agregar Curso a la Malla</p></html>");
-        JButton btnAddPrerrequisito = new JButton("<html><p style='text-align:center;'>Agregar Prerrequisito a Curso</p></html>");
-        JButton btnEliminar = new JButton("<html><p style='text-align:center;'>Eliminar Carrera</p></html>");
-
-        panelBotones.add(btnVerMalla);
-        panelBotones.add(btnAddAsignatura);
-        panelBotones.add(btnAddPrerrequisito);
-        panelBotones.add(btnEliminar);
-
-        panelIzquierdo.add(panelFormulario, BorderLayout.NORTH);
-        panelIzquierdo.add(panelBotones, BorderLayout.CENTER);
-
-        add(panelIzquierdo, BorderLayout.WEST);
-
-        String[] columnas = {"ID", "Nombre", "Créditos Totales", "Cant. Asignaturas"};
-        tableModel = new DefaultTableModel(columnas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                 return false;
-             }
-        };
-        
-        tablaCarreras = new JTable(tableModel);
-        tablaCarreras.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tablaCarreras.getTableHeader().setReorderingAllowed(false);
-        
-        tablaCarreras.setRowHeight(35);
-        tablaCarreras.getTableHeader().setPreferredSize(new Dimension(0, 40));
-        tablaCarreras.setShowVerticalLines(false);
-        
-        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
-                return this;
-            }
-        };
-        
-        for (int i = 0; i < tablaCarreras.getColumnCount(); i++) {
-            tablaCarreras.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
-        }
-        
-        JScrollPane scrollPane = new JScrollPane(tablaCarreras);
-        scrollPane.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Catálogo de Carreras"),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-        
-        rowSorter = new TableRowSorter<>(tableModel);
-        tablaCarreras.setRowSorter(rowSorter);
-
-        JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        panelBusqueda.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        panelBusqueda.add(new JLabel("Filtrar:"));
-        
-        txtBuscar = new JTextField(20);
-        panelBusqueda.add(txtBuscar);
-
-        txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { filtrarTabla(); }
-            @Override
-            public void removeUpdate(DocumentEvent e) { filtrarTabla(); }
-            @Override
-            public void changedUpdate(DocumentEvent e) { filtrarTabla(); }
-
-            private void filtrarTabla() {
-                String texto = txtBuscar.getText();
-                if (texto.trim().isEmpty()) {
-                    rowSorter.setRowFilter(null);
-                } else {
-                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + texto));
-                }
-            }
-        });
-
-        JPanel panelCentral = new JPanel(new BorderLayout());
-        panelCentral.add(panelBusqueda, BorderLayout.NORTH);
-        panelCentral.add(scrollPane, BorderLayout.CENTER);
-        
-        add(panelCentral, BorderLayout.CENTER);
+        JButton btnVerMalla = agregarAccion("Ver Malla Curricular");
+        JButton btnAddAsignatura = agregarAccion("Agregar Curso a la Malla");
+        JButton btnAddPrerrequisito = agregarAccion("Agregar Prerrequisito a Curso");
+        JButton btnEliminar = agregarAccion("Eliminar Carrera");
 
         btnAgregar.addActionListener(e -> {
             if (controlador != null) {
@@ -247,14 +129,7 @@ public class GuiVistaCarrera extends JPanel implements VistaCarrera {
      *         o {@code null} si no hay ninguna fila seleccionada en la tabla.
      */
     private String obtenerIdSeleccionado() {
-        int fila = tablaCarreras.getSelectedRow();
-        if (fila >= 0) {
-            int filaModelo = tablaCarreras.convertRowIndexToModel(fila);
-            return (String) tableModel.getValueAt(filaModelo, 0);
-        } else {
-            mostrarError("Debe seleccionar una carrera de la tabla para realizar esta acción.");
-            return null;
-        }
+        return obtenerIdentificadorSeleccionado("Debe seleccionar una carrera de la tabla para realizar esta acción.");
     }
 
     private void limpiarFormulario() {
@@ -331,13 +206,4 @@ public class GuiVistaCarrera extends JPanel implements VistaCarrera {
         JOptionPane.showMessageDialog(this, scrollPane, "Detalle de Malla: " + carrera.getId(), JOptionPane.INFORMATION_MESSAGE);
     }
 
-    @Override
-    public void mostrarMensaje(String mensaje) {
-        JOptionPane.showMessageDialog(this, mensaje, "Éxito", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    @Override
-    public void mostrarError(String error) {
-        JOptionPane.showMessageDialog(this, error, "Error", JOptionPane.ERROR_MESSAGE);
-    }
 }

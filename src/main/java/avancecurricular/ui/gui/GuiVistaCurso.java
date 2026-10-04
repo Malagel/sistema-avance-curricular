@@ -6,13 +6,8 @@ import avancecurricular.model.Profesor;
 import avancecurricular.ui.controller.ControladorCurso;
 import avancecurricular.ui.view.VistaCurso;
 
-import javax.swing.table.TableRowSorter;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.util.Collection;
 
 /**
@@ -20,134 +15,23 @@ import java.util.Collection;
  * Utiliza un {@link DefaultTableModel} sobreescrito para renderizar una tabla de sólo lectura,
  * delegando la reactividad (actualizaciones, registros, eliminaciones) mediante listeners hacia el controlador.
  */
-public class GuiVistaCurso extends JPanel implements VistaCurso {
+public class GuiVistaCurso extends GuiVistaModulo implements VistaCurso {
     private ControladorCurso controlador;
     private JTextField txtId;
     private JTextField txtNombre;
     private JTextField txtCreditos;
-    private DefaultTableModel tableModel;
-    private JTable tablaCursos;
-    private TableRowSorter<DefaultTableModel> rowSorter;
-    private JTextField txtBuscar;
 
     public GuiVistaCurso() {
-        setLayout(new BorderLayout(20, 20));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        super("Registrar Curso", 3, 3,
+              "Catálogo de Cursos", "ID", "Nombre", "Créditos");
 
-        JPanel panelIzquierdo = new JPanel(new BorderLayout(0, 20));
-        panelIzquierdo.setPreferredSize(new Dimension(350, 0));
-        
-        JPanel panelFormulario = new JPanel(new BorderLayout(0, 15));
-        panelFormulario.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Registrar Curso"),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
-        
-        JPanel panelCampos = new JPanel(new GridLayout(3, 2, 10, 15));
-        
-        panelCampos.add(new JLabel("ID:"));
-        txtId = new JTextField();
-        panelCampos.add(txtId);
-        
-        panelCampos.add(new JLabel("Nombre:"));
-        txtNombre = new JTextField();
-        panelCampos.add(txtNombre);
-        
-        panelCampos.add(new JLabel("Créditos:"));
-        txtCreditos = new JTextField();
-        panelCampos.add(txtCreditos);
+        txtId = agregarCampo("ID:");
+        txtNombre = agregarCampo("Nombre:");
+        txtCreditos = agregarCampo("Créditos:");
 
-        JButton btnAgregar = new JButton("<html><p style='text-align:center;'>Registrar</p></html>");
-        btnAgregar.setPreferredSize(new Dimension(0, 45));
-
-        panelFormulario.add(panelCampos, BorderLayout.CENTER);
-        panelFormulario.add(btnAgregar, BorderLayout.SOUTH);
-
-        JPanel panelBotones = new JPanel(new GridLayout(3, 1, 0, 10));
-        panelBotones.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Acciones"),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
-        
-        JButton btnDetalles = new JButton("<html><p style='text-align:center;'>Ver Detalles</p></html>");
-        JButton btnEliminar = new JButton("<html><p style='text-align:center;'>Eliminar Curso</p></html>");
-        JButton btnModificar = new JButton("<html><p style='text-align:center;'>Modificar Curso</p></html>");
-
-        panelBotones.add(btnDetalles);
-        panelBotones.add(btnEliminar);
-        panelBotones.add(btnModificar);
-
-        panelIzquierdo.add(panelFormulario, BorderLayout.NORTH);
-        panelIzquierdo.add(panelBotones, BorderLayout.CENTER);
-        add(panelIzquierdo, BorderLayout.WEST);
-
-        String[] columnas = {"ID", "Nombre", "Créditos"};
-        tableModel = new DefaultTableModel(columnas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        
-        tablaCursos = new JTable(tableModel);
-        tablaCursos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tablaCursos.getTableHeader().setReorderingAllowed(false);
-        tablaCursos.setRowHeight(35);
-        tablaCursos.getTableHeader().setPreferredSize(new Dimension(0, 40));
-        tablaCursos.setShowVerticalLines(false);
-        
-        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
-                return this;
-            }
-        };
-        
-        for (int i = 0; i < tablaCursos.getColumnCount(); i++) {
-            tablaCursos.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
-        }
-        
-        JScrollPane scrollPane = new JScrollPane(tablaCursos);
-        scrollPane.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Catálogo de Cursos"),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-        
-        rowSorter = new TableRowSorter<>(tableModel);
-        tablaCursos.setRowSorter(rowSorter);
-
-        JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        panelBusqueda.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        panelBusqueda.add(new JLabel("Filtrar:"));
-        
-        txtBuscar = new JTextField(20);
-        panelBusqueda.add(txtBuscar);
-
-        txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { filtrarTabla(); }
-            @Override
-            public void removeUpdate(DocumentEvent e) { filtrarTabla(); }
-            @Override
-            public void changedUpdate(DocumentEvent e) { filtrarTabla(); }
-
-            private void filtrarTabla() {
-                String texto = txtBuscar.getText();
-                if (texto.trim().isEmpty()) {
-                    rowSorter.setRowFilter(null);
-                } else {
-                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + texto));
-                }
-            }
-        });
-
-        JPanel panelCentral = new JPanel(new BorderLayout());
-        panelCentral.add(panelBusqueda, BorderLayout.NORTH);
-        panelCentral.add(scrollPane, BorderLayout.CENTER);
-        
-        add(panelCentral, BorderLayout.CENTER);
+        JButton btnDetalles = agregarAccion("Ver Detalles");
+        JButton btnEliminar = agregarAccion("Eliminar Curso");
+        JButton btnModificar = agregarAccion("Modificar Curso");
 
         btnAgregar.addActionListener(e -> {
             if (controlador != null) {
@@ -228,14 +112,7 @@ public class GuiVistaCurso extends JPanel implements VistaCurso {
      *         o {@code null} si no hay ninguna fila seleccionada en la tabla.
      */
     private String obtenerIdSeleccionado() {
-        int fila = tablaCursos.getSelectedRow();
-        if (fila >= 0) {
-            int filaModelo = tablaCursos.convertRowIndexToModel(fila);
-            return (String) tableModel.getValueAt(filaModelo, 0);
-        } else {
-            mostrarError("Debe seleccionar un curso de la tabla para realizar esta acción.");
-            return null;
-        }
+        return obtenerIdentificadorSeleccionado("Debe seleccionar un curso de la tabla para realizar esta acción.");
     }
 
     private void limpiarFormulario() {
@@ -299,13 +176,4 @@ public class GuiVistaCurso extends JPanel implements VistaCurso {
         JOptionPane.showMessageDialog(this, sb.toString(), "Detalles del Curso: " + curso.getId(), JOptionPane.INFORMATION_MESSAGE);
     }
 
-    @Override
-    public void mostrarMensaje(String mensaje) {
-        JOptionPane.showMessageDialog(this, mensaje, "Éxito", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    @Override
-    public void mostrarError(String error) {
-        JOptionPane.showMessageDialog(this, error, "Error", JOptionPane.ERROR_MESSAGE);
-    }
 }

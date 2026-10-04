@@ -6,12 +6,7 @@ import avancecurricular.ui.controller.ControladorProfesor;
 import avancecurricular.ui.view.VistaProfesor;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableRowSorter;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.*;
 import java.util.Collection;
 
 /**
@@ -19,134 +14,22 @@ import java.util.Collection;
  * Utiliza un {@link DefaultTableModel} sobreescrito para renderizar una tabla de sólo lectura,
  * delegando la reactividad (actualizaciones, registros, eliminaciones) mediante listeners hacia el controlador.
  */
-public class GuiVistaProfesor extends JPanel implements VistaProfesor {
+public class GuiVistaProfesor extends GuiVistaModulo implements VistaProfesor {
     private ControladorProfesor controlador;
     private JTextField txtRut;
     private JTextField txtNombre;
-    private DefaultTableModel tableModel;
-    private JTable tablaProfesores;
-    
-    private TableRowSorter<DefaultTableModel> rowSorter;
-    private JTextField txtBuscar;
 
     public GuiVistaProfesor() {
-        setLayout(new BorderLayout(20, 20));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        super("Registrar Profesor", 2, 4,
+              "Nómina de Profesores", "RUT", "Nombre", "Cursos Asignados");
 
-        JPanel panelIzquierdo = new JPanel(new BorderLayout(0, 20));
-        panelIzquierdo.setPreferredSize(new Dimension(350, 0));
-        
-        JPanel panelFormulario = new JPanel(new BorderLayout(0, 15));
-        panelFormulario.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Registrar Profesor"),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
-        
-        JPanel panelCampos = new JPanel(new GridLayout(2, 2, 10, 15));
-        
-        panelCampos.add(new JLabel("RUT:"));
-        txtRut = new JTextField();
-        panelCampos.add(txtRut);
-        
-        panelCampos.add(new JLabel("Nombre:"));
-        txtNombre = new JTextField();
-        panelCampos.add(txtNombre);
+        txtRut = agregarCampo("RUT:");
+        txtNombre = agregarCampo("Nombre:");
 
-        JButton btnAgregar = new JButton("<html><p style='text-align:center;'>Registrar</p></html>");
-        btnAgregar.setPreferredSize(new Dimension(0, 45));
-
-        panelFormulario.add(panelCampos, BorderLayout.CENTER);
-        panelFormulario.add(btnAgregar, BorderLayout.SOUTH);
-
-        JPanel panelBotones = new JPanel(new GridLayout(4, 1, 0, 10));
-        panelBotones.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Acciones"),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
-        
-        JButton btnVerCursos = new JButton("<html><p style='text-align:center;'>Ver Cursos Dictados</p></html>");
-        JButton btnAsignarCurso = new JButton("<html><p style='text-align:center;'>Asignar Curso a Profesor</p></html>");
-        JButton btnRemoverCurso = new JButton("<html><p style='text-align:center;'>Remover Curso de Profesor</p></html>");
-        JButton btnEliminar = new JButton("<html><p style='text-align:center;'>Eliminar Profesor</p></html>");
-
-        panelBotones.add(btnVerCursos);
-        panelBotones.add(btnAsignarCurso);
-        panelBotones.add(btnRemoverCurso);
-        panelBotones.add(btnEliminar);
-
-        panelIzquierdo.add(panelFormulario, BorderLayout.NORTH);
-        panelIzquierdo.add(panelBotones, BorderLayout.CENTER);
-
-        add(panelIzquierdo, BorderLayout.WEST);
-
-        String[] columnas = {"RUT", "Nombre", "Cursos Asignados"};
-        tableModel = new DefaultTableModel(columnas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                 return false;
-             }
-        };
-        
-        tablaProfesores = new JTable(tableModel);
-        tablaProfesores.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tablaProfesores.getTableHeader().setReorderingAllowed(false);
-        
-        tablaProfesores.setRowHeight(35);
-        tablaProfesores.getTableHeader().setPreferredSize(new Dimension(0, 40));
-        tablaProfesores.setShowVerticalLines(false);
-        
-        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
-                return this;
-            }
-        };
-        
-        for (int i = 0; i < tablaProfesores.getColumnCount(); i++) {
-            tablaProfesores.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
-        }
-        
-        JScrollPane scrollPane = new JScrollPane(tablaProfesores);
-        scrollPane.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Nómina de Profesores"),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-        
-        rowSorter = new TableRowSorter<>(tableModel);
-        tablaProfesores.setRowSorter(rowSorter);
-
-        JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        panelBusqueda.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        panelBusqueda.add(new JLabel("Filtrar:"));
-        
-        txtBuscar = new JTextField(20);
-        panelBusqueda.add(txtBuscar);
-
-        txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { filtrarTabla(); }
-            @Override
-            public void removeUpdate(DocumentEvent e) { filtrarTabla(); }
-            @Override
-            public void changedUpdate(DocumentEvent e) { filtrarTabla(); }
-
-            private void filtrarTabla() {
-                String texto = txtBuscar.getText();
-                if (texto.trim().isEmpty()) {
-                    rowSorter.setRowFilter(null);
-                } else {
-                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + texto));
-                }
-            }
-        });
-
-        JPanel panelCentral = new JPanel(new BorderLayout());
-        panelCentral.add(panelBusqueda, BorderLayout.NORTH);
-        panelCentral.add(scrollPane, BorderLayout.CENTER);
-        
-        add(panelCentral, BorderLayout.CENTER);
+        JButton btnVerCursos = agregarAccion("Ver Cursos Dictados");
+        JButton btnAsignarCurso = agregarAccion("Asignar Curso a Profesor");
+        JButton btnRemoverCurso = agregarAccion("Remover Curso de Profesor");
+        JButton btnEliminar = agregarAccion("Eliminar Profesor");
 
         btnAgregar.addActionListener(e -> {
             if (controlador != null) {
@@ -220,14 +103,7 @@ public class GuiVistaProfesor extends JPanel implements VistaProfesor {
      *         o {@code null} si no hay ninguna fila seleccionada en la tabla.
      */
     private String obtenerRutSeleccionado() {
-        int fila = tablaProfesores.getSelectedRow();
-        if (fila >= 0) {
-            int filaModelo = tablaProfesores.convertRowIndexToModel(fila);
-            return (String) tableModel.getValueAt(filaModelo, 0);
-        } else {
-            mostrarError("Debe seleccionar un profesor de la tabla para realizar esta acción.");
-            return null;
-        }
+        return obtenerIdentificadorSeleccionado("Debe seleccionar un profesor de la tabla para realizar esta acción.");
     }
 
     private void limpiarFormulario() {
@@ -278,13 +154,4 @@ public class GuiVistaProfesor extends JPanel implements VistaProfesor {
         JOptionPane.showMessageDialog(this, sb.toString(), "Carga Académica: " + profesor.getRut(), JOptionPane.INFORMATION_MESSAGE);
     }
 
-    @Override
-    public void mostrarMensaje(String mensaje) {
-        JOptionPane.showMessageDialog(this, mensaje, "Éxito", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    @Override
-    public void mostrarError(String error) {
-        JOptionPane.showMessageDialog(this, error, "Error", JOptionPane.ERROR_MESSAGE);
-    }
 }
